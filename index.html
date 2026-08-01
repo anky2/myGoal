@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Goals Tracker</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="confetti-layer" aria-hidden="true"></div>
+
+  <header class="app-header">
+    <div class="app-header-inner">
+      <h1 class="app-title"><a href="#/">🎯 Goals Tracker</a></h1>
+      <div class="app-header-actions">
+        <button id="streak-badge" class="streak-badge" type="button" title="Your activity streak">
+          <span class="streak-flame">🔥</span>
+          <span id="streak-count">0</span>
+        </button>
+        <button id="theme-toggle" class="icon-btn" type="button" title="Toggle theme">🌓</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="view-root" class="view-root"></main>
+
+  <div id="toast-container" aria-live="polite"></div>
+
+  <dialog id="app-modal" class="app-modal">
+    <div id="app-modal-content"></div>
+  </dialog>
+
+  <!-- Templates -->
+  <template id="tmpl-goal-card">
+    <article class="goal-card">
+      <div class="goal-card-accent"></div>
+      <div class="goal-card-body">
+        <div class="goal-card-top">
+          <h3 class="goal-card-title"></h3>
+          <div class="goal-card-menu">
+            <button class="icon-btn btn-edit-goal" type="button" title="Edit goal">✏️</button>
+            <button class="icon-btn btn-archive-goal" type="button" title="Archive goal">📦</button>
+            <button class="icon-btn btn-delete-goal" type="button" title="Delete goal">🗑️</button>
+          </div>
+        </div>
+        <p class="goal-card-desc"></p>
+        <div class="goal-card-progress">
+          <div class="progress-bar"><div class="progress-bar-fill"></div></div>
+          <span class="goal-card-progress-label"></span>
+        </div>
+        <div class="goal-card-meta">
+          <span class="goal-card-steps"></span>
+          <span class="goal-card-deadline"></span>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <template id="tmpl-step-row">
+    <li class="step-row">
+      <input type="checkbox" class="step-checkbox" />
+      <span class="step-title" tabindex="0" role="textbox" aria-label="Step title"></span>
+      <span class="step-completed-date"></span>
+      <div class="step-actions">
+        <button class="icon-btn btn-step-up" type="button" title="Move up">↑</button>
+        <button class="icon-btn btn-step-down" type="button" title="Move down">↓</button>
+        <button class="icon-btn btn-step-delete" type="button" title="Delete step">🗑️</button>
+      </div>
+    </li>
+  </template>
+
+  <template id="tmpl-next-item">
+    <li class="next-item">
+      <input type="checkbox" class="next-item-checkbox" />
+      <div class="next-item-text">
+        <span class="next-item-step"></span>
+        <a class="next-item-goal" href="#"></a>
+      </div>
+    </li>
+  </template>
+
+  <script src="js/storage.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/streaks.js"></script>
+  <script src="js/celebrate.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
