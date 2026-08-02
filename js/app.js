@@ -6,6 +6,7 @@
   var Streaks = window.App.Streaks;
   var Celebrate = window.App.Celebrate;
   var Render = window.App.Render;
+  var Sync = window.App.Sync;
 
   var state = Storage.load();
   if (!state.ui) state.ui = { goalFilter: "all" };
@@ -17,8 +18,26 @@
   var streakBadge = document.getElementById("streak-badge");
   var streakCount = document.getElementById("streak-count");
 
+  // Saves locally and, if this device is paired, pushes to the sync doc.
+  // Use for any change a person on THIS device makes.
   function persist() {
     Storage.save(state);
+    if (Sync && state.settings.syncCode) {
+      Sync.push(state.settings.syncCode, state);
+    }
+  }
+
+  // Saves locally only — used when applying data that just arrived FROM
+  // sync, so we don't immediately push it right back and ping-pong.
+  function persistLocalOnly() {
+    Storage.save(state);
+  }
+
+  function handleRemoteUpdate(remoteData) {
+    state.goals = remoteData.goals || [];
+    state.streak = remoteData.streak || state.streak;
+    persistLocalOnly();
+    renderCurrentView();
   }
 
   function findGoal(goalId) {
@@ -50,6 +69,7 @@
       Render.renderDashboard(viewRoot, state);
     }
     renderStreakBadge(false);
+    renderSyncDot();
   }
 
   window.addEventListener("hashchange", renderCurrentView);
@@ -88,6 +108,208 @@
     applyTheme();
     persist();
   });
+
+  // ---------- Sync ----------
+
+  function renderSyncDot() {
+    var dot = document.getElementById("sync-dot");
+    if (dot) dot.classList.toggle("on", !!state.settings.syncCode);
+  }
+
+  function openSyncModal() {
+    openModal(function (content) {
+      var title = document.createElement("h2");
+      title.className = "modal-title";
+      title.textContent = "Sync across devices";
+      content.appendChild(title);
+
+      if (!Sync || !Sync.isConfigured()) {
+        var msg = document.createElement("p");
+        msg.textContent = "Sync isn't set up in this build yet.";
+        content.appendChild(msg);
+        return;
+      }
+
+      if (state.settings.syncCode) {
+        renderPairedView(content, state.settings.syncCode);
+      } else {
+        renderUnpairedView(content);
+      }
+    });
+  }
+
+  function renderPairedView(content, code) {
+    var statusLine = document.createElement("div");
+    statusLine.className = "sync-status-line";
+    var dot = document.createElement("span");
+    dot.className = "sync-dot on";
+    statusLine.appendChild(dot);
+    statusLine.appendChild(document.createTextNode("This device is synced"));
+    content.appendChild(statusLine);
+
+    var p = document.createElement("p");
+    p.textContent = "Enter this same code on your other device to connect it:";
+    content.appendChild(p);
+
+    var codeDisplay = document.createElement("div");
+    codeDisplay.className = "sync-code-display";
+    codeDisplay.textContent = code;
+    content.appendChild(codeDisplay);
+
+    var hr = document.createElement("hr");
+    hr.className = "sync-divider";
+    content.appendChild(hr);
+
+    var actions = document.createElement("div");
+    actions.className = "form-actions";
+    var closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "btn-secondary";
+    closeBtn.textContent = "Close";
+    closeBtn.addEventListener("click", closeModal);
+    var stopBtn = document.createElement("button");
+    stopBtn.type = "button";
+    stopBtn.className = "btn-danger";
+    stopBtn.textContent = "Stop syncing this device";
+    stopBtn.addEventListener("click", function () {
+      Sync.stop();
+      state.settings.syncCode = null;
+      persistLocalOnly();
+      renderSyncDot();
+      closeModal();
+    });
+    actions.appendChild(closeBtn);
+    actions.appendChild(stopBtn);
+    content.appendChild(actions);
+  }
+
+  function renderUnpairedView(content) {
+    var p1 = document.createElement("p");
+    p1.textContent = "Set up sync once on your first device, then connect any others with the code it gives you.";
+    content.appendChild(p1);
+
+    var createBtn = document.createElement("button");
+    createBtn.type = "button";
+    createBtn.className = "btn-primary";
+    createBtn.style.width = "100%";
+    createBtn.textContent = "Set up sync on this device";
+    createBtn.addEventListener("click", function () {
+      createBtn.disabled = true;
+      createBtn.textContent = "Setting up…";
+      Sync.createCode(state, function (err, code) {
+        if (err) {
+          createBtn.disabled = false;
+          createBtn.textContent = "Set up sync on this device";
+          showInlineError(content, err.message);
+          return;
+        }
+        state.settings.syncCode = code;
+        persistLocalOnly();
+        Sync.start(code, handleRemoteUpdate);
+        renderSyncDot();
+        modalContent.innerHTML = "";
+        var freshTitle = document.createElement("h2");
+        freshTitle.className = "modal-title";
+        freshTitle.textContent = "Sync across devices";
+        modalContent.appendChild(freshTitle);
+        renderPairedView(modalContent, code);
+      });
+    });
+    content.appendChild(createBtn);
+
+    var hr = document.createElement("hr");
+    hr.className = "sync-divider";
+    content.appendChild(hr);
+
+    var p2 = document.createElement("p");
+    p2.textContent = "Already set up sync on another device? Enter its code here:";
+    content.appendChild(p2);
+
+    var row = document.createElement("div");
+    row.className = "add-step-row";
+    var codeInput = document.createElement("input");
+    codeInput.type = "text";
+    codeInput.placeholder = "e.g. 7K4M9XPQ";
+    codeInput.style.textTransform = "uppercase";
+    var connectBtn = document.createElement("button");
+    connectBtn.type = "button";
+    connectBtn.className = "btn-primary";
+    connectBtn.textContent = "Connect";
+    row.appendChild(codeInput);
+    row.appendChild(connectBtn);
+    content.appendChild(row);
+
+    connectBtn.addEventListener("click", function () {
+      var code = codeInput.value.trim().toUpperCase();
+      if (!code) return;
+      connectBtn.disabled = true;
+      connectBtn.textContent = "Connecting…";
+      Sync.fetchOnce(code, function (err, remoteData) {
+        connectBtn.disabled = false;
+        connectBtn.textContent = "Connect";
+        if (err) {
+          showInlineError(content, err.message);
+          return;
+        }
+        var proceed = function () {
+          state.goals = remoteData.goals || [];
+          state.streak = remoteData.streak || state.streak;
+          state.settings.syncCode = code;
+          persistLocalOnly();
+          Sync.start(code, handleRemoteUpdate);
+          renderSyncDot();
+          renderCurrentView();
+          closeModal();
+          Celebrate.showToast("Synced! 🎉");
+        };
+        if (state.goals.length > 0) {
+          showReplaceConfirm(state.goals.length, proceed);
+        } else {
+          proceed();
+        }
+      });
+    });
+  }
+
+  function showInlineError(content, message) {
+    var existing = content.querySelector(".sync-error");
+    if (existing) existing.remove();
+    var err = document.createElement("p");
+    err.className = "sync-error";
+    err.textContent = message;
+    content.appendChild(err);
+  }
+
+  function showReplaceConfirm(goalCount, onConfirm) {
+    modalContent.innerHTML = "";
+    var title = document.createElement("h2");
+    title.className = "modal-title";
+    title.textContent = "Replace this device's goals?";
+    modalContent.appendChild(title);
+
+    var msg = document.createElement("p");
+    msg.textContent = "This device already has " + goalCount + " goal" + (goalCount === 1 ? "" : "s") +
+      ". Connecting will replace them with the synced data from your other device. This can't be undone.";
+    modalContent.appendChild(msg);
+
+    var actions = document.createElement("div");
+    actions.className = "form-actions";
+    var cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "btn-secondary";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", closeModal);
+    var confirmBtn = document.createElement("button");
+    confirmBtn.type = "button";
+    confirmBtn.className = "btn-danger";
+    confirmBtn.textContent = "Replace and connect";
+    confirmBtn.addEventListener("click", onConfirm);
+    actions.appendChild(cancelBtn);
+    actions.appendChild(confirmBtn);
+    modalContent.appendChild(actions);
+  }
+
+  document.getElementById("sync-btn").addEventListener("click", openSyncModal);
 
   // ---------- Completion flow (shared by step checkbox + zero-step toggle) ----------
 
@@ -560,6 +782,9 @@
     applyTheme();
     var decayed = Streaks.decayIfBroken(state.streak);
     if (decayed) persist();
+    if (Sync && state.settings.syncCode && Sync.isConfigured()) {
+      Sync.start(state.settings.syncCode, handleRemoteUpdate);
+    }
     renderCurrentView();
   }
 

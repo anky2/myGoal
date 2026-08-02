@@ -140,6 +140,65 @@ button {
   border-color: var(--accent);
 }
 
+#sync-btn {
+  position: relative;
+}
+
+.sync-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  border: 1px solid var(--surface);
+}
+
+.sync-dot.on {
+  background: var(--success);
+}
+
+.sync-code-display {
+  text-align: center;
+  font-family: ui-monospace, monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 14px 0;
+  user-select: all;
+}
+
+.sync-status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.sync-status-line .sync-dot {
+  position: static;
+  border: none;
+}
+
+.sync-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.sync-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 18px 0;
+}
+
 /* ---------- Layout ---------- */
 .view-root {
   max-width: 1100px;
