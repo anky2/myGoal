@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Goals Tracker</title>
 <link rel="stylesheet" href="css/style.css" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#4f8cff" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
 </head>
 <body>
   <div id="confetti-layer" aria-hidden="true"></div>
@@ -26,6 +30,10 @@
   </header>
 
   <main id="view-root" class="view-root"></main>
+
+  <footer class="app-footer">
+    <a href="privacy.html">Privacy Policy</a>
+  </footer>
 
   <div id="toast-container" aria-live="polite"></div>
 
@@ -96,5 +104,13 @@
   <script src="js/sync.js"></script>
 
   <script src="js/app.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Not deployed automatically by being in this repo. Paste into
+// Firebase Console -> Firestore Database -> Rules for project "mygoal-8876d",
+// or deploy via the Firebase CLI: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /syncedData/{code} {
+      allow read: if true;
+      allow write: if code.matches('^[A-Z0-9]{8}$')
+                   && request.resource.data.keys().hasOnly(['schemaVersion', 'goals', 'streak', 'updatedAt'])
+                   && request.resource.data.goals is list
+                   && request.resource.data.goals.size() < 500;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
