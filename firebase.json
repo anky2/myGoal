@@ -4,5 +4,8 @@
     "ignore": [
       "firebase.json"
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }
