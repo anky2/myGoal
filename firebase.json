@@ -1,15 +1,8 @@
 {
   "hosting": {
-    "public": ".",
+    "public": "public",
     "ignore": [
-      "firebase.json",
-      ".firebaserc",
-      "**/.git/**",
-      "**/.claude/**",
-      "**/node_modules/**",
-      "NEXT_STEPS.md",
-      "README.md",
-      "firestore.rules"
+      "firebase.json"
     ]
   }
 }

@@ -1,0 +1,51 @@
+{
+  "packageId": "app.web.mygoal_8876d.twa",
+  "host": "mygoal-8876d.web.app",
+  "name": "Goals Tracker",
+  "launcherName": "Goals",
+  "display": "standalone",
+  "themeColor": "#4F8CFF",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#F5F6FA",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://mygoal-8876d.web.app/icons/icon-512.png",
+  "maskableIconUrl": "https://mygoal-8876d.web.app/icons/icon-512-maskable.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "C:\\Users\\Mintu\\Desktop\\MyProj\\MyGoals\\android.keystore",
+    "alias": "upload"
+  },
+  "appVersionName": "2",
+  "appVersionCode": 2,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://mygoal-8876d.web.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://mygoal-8876d.web.app/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "2"
+}

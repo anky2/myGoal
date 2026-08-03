@@ -1,0 +1,23 @@
+# Secrets - never commit
+*.keystore
+*.jks
+
+# Bubblewrap-generated native Android/Gradle project (regenerate with
+# `bubblewrap init` / `bubblewrap update` from twa-manifest.json)
+app/
+build/
+gradle/
+.gradle/
+gradlew
+gradlew.bat
+build.gradle
+settings.gradle
+gradle.properties
+*.aab
+*.apk
+*.apk.idsig
+manifest-checksum.txt
+store_icon.png
+
+# Firebase CLI local cache
+.firebase/
