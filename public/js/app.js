@@ -33,9 +33,13 @@
     Storage.save(state);
   }
 
+  // remoteData comes from another device via Firestore — never trust its
+  // shape. Sanitize before applying so a malformed or incomplete payload
+  // can't crash the view.
   function handleRemoteUpdate(remoteData) {
-    state.goals = remoteData.goals || [];
-    state.streak = remoteData.streak || state.streak;
+    if (!remoteData || typeof remoteData !== "object") return;
+    state.goals = Models.sanitizeGoals(remoteData.goals);
+    state.streak = Models.sanitizeStreak(remoteData.streak, state.streak);
     persistLocalOnly();
     renderCurrentView();
   }
@@ -252,8 +256,8 @@
           return;
         }
         var proceed = function () {
-          state.goals = remoteData.goals || [];
-          state.streak = remoteData.streak || state.streak;
+          state.goals = Models.sanitizeGoals(remoteData && remoteData.goals);
+          state.streak = Models.sanitizeStreak(remoteData && remoteData.streak, state.streak);
           state.settings.syncCode = code;
           persistLocalOnly();
           Sync.start(code, handleRemoteUpdate);

@@ -6,11 +6,18 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /syncedData/{code} {
-      allow read: if true;
+      // Split get/list: the app only ever fetches ONE known document
+      // (by code), so "get" being open is fine — but "list" (querying the
+      // whole collection with no code) must be denied, or anyone can
+      // enumerate every synced user's data with no code at all.
+      allow get: if true;
+      allow list: if false;
       allow write: if code.matches('^[A-Z0-9]{8}$')
                    && request.resource.data.keys().hasOnly(['schemaVersion', 'goals', 'streak', 'updatedAt'])
+                   && request.resource.data.schemaVersion is int
                    && request.resource.data.goals is list
-                   && request.resource.data.goals.size() < 500;
+                   && request.resource.data.goals.size() < 500
+                   && request.resource.data.updatedAt is string;
     }
     match /{document=**} {
       allow read, write: if false;
